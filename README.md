@@ -194,6 +194,97 @@ convinient if title bars are removed.
 
 (Note: the RGB values presented here are for the default Breeze theme)
 
+### Script the Above and More ###
+
+The following are some utility functions for those who prefer doing
+the above steps from a shell script, and maybe want to add some tweaks
+to their configuration pragmatically.
+
+```sh
+hex_rgb() {
+    local css
+    local printstring
+    local hex="$(tr '[:lower:]' '[:upper:]' <<< ${1#\#})"
+    # Convert ABC to AABBCC
+    if [[ $hex =~ ^[A-F0-9]{3}$ ]]; then
+        hex=$(sed -e 's/\(.\)/\1\1/g' <<< $hex)
+    fi
+    # If the first param is a valid hex string, convert to rgb
+    if [[ $hex =~ ^[A-F0-9]{6}$ ]]; then
+        # If second param exists and is a float between 0 and 1, output rgba
+        if [[ -n $2 && $2 =~ ^(0?\.[0-9]+|1(\.0)?)$ ]]; then
+            [[ $css ]] && printstring="rgba(%d,%d,%d,%s)" || printstring="%d,%d,%d,%s"
+            printf $printstring  0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2} $2
+        else
+            [[ $css ]] && printstring="rgb(%d,%d,%d)" || printstring="%d,%d,%d"
+            printf $printstring 0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2}
+        fi
+        # If it's not valid hex, return the original string
+    else
+        echo -n $@
+    fi
+}
+
+# Function to create global kde shortcuts
+bind () {
+    local group cmd keys
+    group=$1 && shift 1
+    for cmd keys in $@; do
+        kwriteconfig5 --file ~/.config/kglobalshortcutsrc \
+                      --group "$group" \
+                      --key "$cmd" \
+                      "$keys"
+    done
+}
+
+# Convenience wrapper around kwriteconfig5
+configure () {
+    local file type
+    file=$1 && shift 1
+    for group key value in $@; do
+        # TODO: handle `path` type should you ever need it
+        [[ $value = true || $value = false ]] && type=bool || type=string
+        kwriteconfig5 --file $file --group $group --key $key --type $type $value
+    done
+}
+
+# The Krohnkite tweaks mentioned above
+configure ~/.config/kwinrc \
+          Plugins krohnkiteEnabled true \ # turn krohnkite on
+          org.kde.kdecoration2 library org.kde.breeze \ # Use breeze borders
+
+configure ~/.config/breezerc \
+          Windeco DrawBorderOnMaximizedWindows true \ # Always draw borders
+          'Windeco Exception 0' BorderSize 3 \ # Normal Border size
+          'Windeco Exception 0' Enabled true \
+          'Windeco Exception 0' ExceptionPattern '.*' \
+          'Windeco Exception 0' ExceptionType 0 \
+          'Windeco Exception 0' HideTitleBar true \ # Hide title bars everywhere
+          'Windeco Exception 0' Mask 16
+
+# Pick border colors
+ACTIVE_BCOLOR='#03a9f4'
+INACTIVE_BCOLOR='#263238'
+
+configure ~/.config/kdeglobals \
+          WM frame $(hex_rgb $ACTIVE_BCOLOR) \
+          WM inactiveFrame $(hex_rgb $INACTIVE_BCOLOR) \
+
+# Create some handy bindings
+bind kwin \
+     'Window Close' 'Meta+Q,Alt+F4,' \
+     'Krohnkite: Three Column Layout' 'Meta+C,none,'
+
+# Make your favorite programs more reachable
+bind emacsclient.desktop _launch 'Meta+E,none,Launch Emacsclient'
+bind firefox.desktop _launch 'Meta+W,none,Launch Firefox'
+
+
+# Deal with your input preferences
+configure ~/.config/kxkbrc Layout Options 'caps:swapescape'
+configure ~/.config/touchpadxlibinputrc \
+          'DELL0808:00 06CB:7E92 Touchpad' tapToClick true
+```
 
 Useful Development Resources
 ----------------------------
