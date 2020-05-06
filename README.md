@@ -147,7 +147,7 @@ Tips
 Krohnkite supports multi-screen setup, but KWin has to be configured to unlock
 the full potential of the script.
 
-1. Enable `Separate Screen Focus` under `Window Management` > 
+1. Enable `Separate Screen Focus` under `Window Management` >
    `Window Behavior` > `Multiscreen Behaviour`
 2. Bind keys for global shortcut `Switch to Next/Previous Screen`
    (Recommend: `Meta + ,` / `Meta + .`)
@@ -183,7 +183,14 @@ convinient if title bars are removed.
 
         kwriteconfig5 --file ~/.config/kdeglobals --group WM --key frame 61,174,233
         kwriteconfig5 --file ~/.config/kdeglobals --group WM --key inactiveFrame  239,240,241
-4. You must **restart** your session to see changes. (i.e. re-login, reboot)
+4. (Optionally) draw borders on maximized windows. Sometimes windows
+   that are not in "monocle mode" as far as Krohkite is concerned, are
+   maximized as far as KDE is concerned, and KDE does not draw borders
+   on maximized windows by default. To change this,select `System
+   Setting` \> `Window Decorations` > `Edit Breeze Decorations` (tiny
+   pencil icon) > `General` > `Allow resizing maximized windows from
+   window edges`
+5. You must **restart** your session to see changes. (i.e. re-login, reboot)
 
 (Note: the RGB values presented here are for the default Breeze theme)
 
@@ -202,4 +209,3 @@ Useful Development Resources
     - [Development/Tutorials/Using KConfig XT](https://techbase.kde.org/Development/Tutorials/Using_KConfig_XT)
  * `*.ui` files can be edited with [Qt Designer](http://doc.qt.io/qt-5/qtdesigner-manual.html).
    It's very straight-forward if you're used to UI programming.
-
