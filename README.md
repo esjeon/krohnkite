@@ -147,7 +147,7 @@ Tips
 Krohnkite supports multi-screen setup, but KWin has to be configured to unlock
 the full potential of the script.
 
-1. Enable `Separate Screen Focus` under `Window Management` > 
+1. Enable `Separate Screen Focus` under `Window Management` >
    `Window Behavior` > `Multiscreen Behaviour`
 2. Bind keys for global shortcut `Switch to Next/Previous Screen`
    (Recommend: `Meta + ,` / `Meta + .`)
@@ -183,13 +183,111 @@ convinient if title bars are removed.
 
         kwriteconfig5 --file ~/.config/kdeglobals --group WM --key frame 61,174,233
         kwriteconfig5 --file ~/.config/kdeglobals --group WM --key inactiveFrame  239,240,241
-4. You must **restart** your session to see changes. (i.e. re-login, reboot)
+4. (Optionally) draw borders on maximized windows. Sometimes windows
+   that are not in "monocle mode" as far as Krohkite is concerned, are
+   maximized as far as KDE is concerned, and KDE does not draw borders
+   on maximized windows by default. To change this,select `System
+   Setting` \> `Window Decorations` > `Edit Breeze Decorations` (tiny
+   pencil icon) > `General` > `Allow resizing maximized windows from
+   window edges`
+5. You must **restart** your session to see changes. (i.e. re-login, reboot)
 
 Note: the RGB values presented here are for the default Breeze theme
 
 Note: You might also need to set the border size larger than the theme's default:
 `System Settings` > `Application Style` > `Window Decorations`: Untick `Use theme's default window border size` and adjust the size (right from the checkbox).
 
+### Script the Above and More ###
+
+The following are some utility functions for those who prefer doing
+the above steps from a shell script, and maybe want to add some tweaks
+to their configuration pragmatically.
+
+```sh
+hex_rgb() {
+    local css
+    local printstring
+    local hex="$(tr '[:lower:]' '[:upper:]' <<< ${1#\#})"
+    # Convert ABC to AABBCC
+    if [[ $hex =~ ^[A-F0-9]{3}$ ]]; then
+        hex=$(sed -e 's/\(.\)/\1\1/g' <<< $hex)
+    fi
+    # If the first param is a valid hex string, convert to rgb
+    if [[ $hex =~ ^[A-F0-9]{6}$ ]]; then
+        # If second param exists and is a float between 0 and 1, output rgba
+        if [[ -n $2 && $2 =~ ^(0?\.[0-9]+|1(\.0)?)$ ]]; then
+            [[ $css ]] && printstring="rgba(%d,%d,%d,%s)" || printstring="%d,%d,%d,%s"
+            printf $printstring  0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2} $2
+        else
+            [[ $css ]] && printstring="rgb(%d,%d,%d)" || printstring="%d,%d,%d"
+            printf $printstring 0x${hex:0:2} 0x${hex:2:2} 0x${hex:4:2}
+        fi
+        # If it's not valid hex, return the original string
+    else
+        echo -n $@
+    fi
+}
+
+# Function to create global kde shortcuts
+bind () {
+    local group cmd keys
+    group=$1 && shift 1
+    for cmd keys in $@; do
+        kwriteconfig5 --file ~/.config/kglobalshortcutsrc \
+                      --group "$group" \
+                      --key "$cmd" \
+                      "$keys"
+    done
+}
+
+# Convenience wrapper around kwriteconfig5
+configure () {
+    local file type
+    file=$1 && shift 1
+    for group key value in $@; do
+        # TODO: handle `path` type should you ever need it
+        [[ $value = true || $value = false ]] && type=bool || type=string
+        kwriteconfig5 --file $file --group $group --key $key --type $type $value
+    done
+}
+
+# The Krohnkite tweaks mentioned above
+configure ~/.config/kwinrc \
+          Plugins krohnkiteEnabled true \ # turn krohnkite on
+          org.kde.kdecoration2 library org.kde.breeze \ # Use breeze borders
+
+configure ~/.config/breezerc \
+          Windeco DrawBorderOnMaximizedWindows true \ # Always draw borders
+          'Windeco Exception 0' BorderSize 3 \ # Normal Border size
+          'Windeco Exception 0' Enabled true \
+          'Windeco Exception 0' ExceptionPattern '.*' \
+          'Windeco Exception 0' ExceptionType 0 \
+          'Windeco Exception 0' HideTitleBar true \ # Hide title bars everywhere
+          'Windeco Exception 0' Mask 16
+
+# Pick border colors
+ACTIVE_BCOLOR='#03a9f4'
+INACTIVE_BCOLOR='#263238'
+
+configure ~/.config/kdeglobals \
+          WM frame $(hex_rgb $ACTIVE_BCOLOR) \
+          WM inactiveFrame $(hex_rgb $INACTIVE_BCOLOR) \
+
+# Create some handy bindings
+bind kwin \
+     'Window Close' 'Meta+Q,Alt+F4,' \
+     'Krohnkite: Three Column Layout' 'Meta+C,none,'
+
+# Make your favorite programs more reachable
+bind emacsclient.desktop _launch 'Meta+E,none,Launch Emacsclient'
+bind firefox.desktop _launch 'Meta+W,none,Launch Firefox'
+
+
+# Deal with your input preferences
+configure ~/.config/kxkbrc Layout Options 'caps:swapescape'
+configure ~/.config/touchpadxlibinputrc \
+          'DELL0808:00 06CB:7E92 Touchpad' tapToClick true
+```
 
 Useful Development Resources
 ----------------------------
@@ -201,4 +299,3 @@ Useful Development Resources
     - [Development/Tutorials/Using KConfig XT](https://techbase.kde.org/Development/Tutorials/Using_KConfig_XT)
  * `*.ui` files can be edited with [Qt Designer](http://doc.qt.io/qt-5/qtdesigner-manual.html).
    It's very straight-forward if you're used to UI programming.
-
