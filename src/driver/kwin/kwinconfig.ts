@@ -20,6 +20,7 @@
 
 class KWinConfig implements IConfig {
     //#region Layout
+    public defaultLayout: number;
     public layoutOrder: string[];
     public layoutFactories: {[key: string]: () => ILayout};
     public maximizeSoleTile: boolean;
@@ -78,9 +79,10 @@ class KWinConfig implements IConfig {
 
         DEBUG.enabled = DEBUG.enabled || KWin.readConfig("debug", false);
 
+        this.defaultLayout = KWin.readConfig("defaultLayout", 0);
         this.layoutOrder = [];
         this.layoutFactories = {};
-        ([
+        const layouts = ([
             ["enableTileLayout"       , true , TileLayout       ],
             ["enableMonocleLayout"    , true , MonocleLayout    ],
             ["enableThreeColumnLayout", true , ThreeColumnLayout],
@@ -90,8 +92,10 @@ class KWinConfig implements IConfig {
             ["enableQuarterLayout"    , false, QuarterLayout    ],
             ["enableFloatingLayout"   , false, FloatingLayout   ],
             ["enableCascadeLayout"    , false, CascadeLayout    ], // TODO: add config
-        ] as Array<[string, boolean, ILayoutClass]>)
-            .forEach(([configKey, defaultValue, layoutClass]) => {
+        ] as Array<[string, boolean, ILayoutClass]>);
+
+        layouts.unshift(layouts.splice(this.defaultLayout, 1)[0]);
+        layouts.forEach(([configKey, defaultValue, layoutClass]) => {
                 if (KWin.readConfig(configKey, defaultValue))
                     this.layoutOrder.push(layoutClass.id);
                 this.layoutFactories[layoutClass.id] = (() => new layoutClass());

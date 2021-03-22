@@ -178,21 +178,75 @@
             </property>
            </widget>
           </item>
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>5</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>Default</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="kcfg_defaultLayout">
+            <property name="toolTip">
+             <string>Change the default layout</string>
+            </property>
+            <item>
+             <property name="text">
+              <string>Tile Layout</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Monocle Layout</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Three Column Layout</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Spiral Layout</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Quarter Layout</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Spread Layout</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Stair Layout</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Floating Layout</string>
+             </property>
+            </item>
+           </widget>
+          </item>
          </layout>
         </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
