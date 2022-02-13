@@ -17,6 +17,6 @@ X-KDE-ServiceTypes=KWin/Script,KCModule
 
 X-KDE-Library=kwin/effects/configs/kcm_kwin4_genericscripted
 X-KDE-PluginKeyword=krohnkite
-X-KDE-ParentComponents=krohnkite
 
+X-KDE-ConfigModule=kwin/effects/configs/kcm_kwin4_genericscripted
 Type=Service
