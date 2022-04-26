@@ -204,6 +204,20 @@ This causes the applications to overlap with other applications. To mitigate thi
 7. Set the fields to `Force` and `0` x `0`
 8. Apply
 
+### Prevent borders and shadows from disappearing. ###
+
+When a window is marked "maximized" in Breeze theme, its borders are removed to save screen space.
+This behavior may not be preferable depending on your setup. This can be mitigated by disabling maximized windows using Window Rules.
+
+1. `System Setting` > `Window Management` > `Window Rules`
+2. Click on `+ Add New...`
+3. Set `Window class` to be `Unimportant`
+4. Set `Window types` to `Normal Window`
+5. Click `+ Add Properties...`
+6. Add the `Maximized horizontally` and `Maximized vertically` Properties.
+7. Set the options to `Force` and `No`.
+8. Apply
+
 Useful Development Resources
 ----------------------------
 
