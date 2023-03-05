@@ -191,8 +191,8 @@ class KWinWindow implements IDriverWindow {
         const unit = this.client.basicUnit;
         const base = this.client.minSize;
 
-        const padWidth  = this.client.geometry.width  - this.client.clientSize.width;
-        const padHeight = this.client.geometry.height - this.client.clientSize.height;
+        const padWidth  = this.client.geometry.width;
+        const padHeight = this.client.geometry.height;
 
         const quotWidth  = Math.floor((geom.width  - base.width  - padWidth ) / unit.width);
         const quotHeight = Math.floor((geom.height - base.height - padHeight) / unit.height);
