@@ -1,6 +1,9 @@
 Kröhnkite
 =========
 
+## This project has been superseed by the KDE implementation:
+## Tiling capabilites are now available in KWin by default [since Plasma 5.27.](https://cdn.kde.org/promo/Announcements/Plasma/5.27/tiling_hl_720p.webm)
+
 [![AUR-git](https://img.shields.io/aur/version/kwin-scripts-krohnkite-git.svg?label=AUR-git)](https://aur.archlinux.org/packages/kwin-scripts-krohnkite-git/)
 
 A dynamic tiling extension for KWin.
