@@ -86,7 +86,7 @@ Krohnkite can be temporarily loaded without installing the script:
     make stop
 
 Note that Krohnkite can destroy itself completely once it is disabled, so no
-restart is required to deactivated it.
+restart is required to deactivate it.
 
 ### Enabling User-Configuration ###
 
