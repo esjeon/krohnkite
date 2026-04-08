@@ -26,23 +26,42 @@
  */
 class TilingController {
     private engine: TilingEngine;
+    private pendingWindows: {[id: string]: boolean};
 
     public constructor(engine: TilingEngine) {
         this.engine = engine;
+        this.pendingWindows = {};
     }
 
-    public onSurfaceUpdate(ctx: IDriverContext, comment: string): void {
-        debugObj(() => ["onSurfaceUpdate", {comment}]);
-        this.engine.arrange(ctx);
+    public isPendingWindow(window: Window): boolean {
+        return this.pendingWindows[window.id] === true;
     }
 
-    public onCurrentSurfaceChanged(ctx: IDriverContext): void {
-        debugObj(() => ["onCurrentSurfaceChanged", {srf: ctx.currentSurface}]);
-        this.engine.arrange(ctx);
+    private markWindowPending(window: Window): void {
+        this.pendingWindows[window.id] = true;
     }
 
-    public onWindowAdded(ctx: IDriverContext, window: Window): void {
-        debugObj(() => ["onWindowAdded", {window}]);
+    private clearPendingWindow(window: Window): void {
+        delete this.pendingWindows[window.id];
+    }
+
+    private canInitializeWindow(window: Window | null): boolean {
+        if (window === null
+            || !this.isPendingWindow(window)
+            || window.state !== WindowState.Unmanaged
+            || window.shouldIgnore)
+            return false;
+
+        const actualGeometry = window.actualGeometry;
+        if (actualGeometry.width <= 10 || actualGeometry.height <= 10)
+            return false;
+
+        const workingArea = window.surface.workingArea;
+        return workingArea.width > 0 && workingArea.height > 0;
+    }
+
+    private initializeWindow(ctx: IDriverContext, window: Window): void {
+        this.clearPendingWindow(window);
         this.engine.manage(window);
 
         /* move window to next surface if the current surface is "full" */
@@ -63,8 +82,37 @@ class TilingController {
         this.engine.arrange(ctx);
     }
 
+    private tryInitializeWindow(ctx: IDriverContext, window: Window | null): boolean {
+        if (!this.canInitializeWindow(window))
+            return false;
+        this.initializeWindow(ctx, window as Window);
+        return true;
+    }
+
+    public onSurfaceUpdate(ctx: IDriverContext, comment: string): void {
+        debugObj(() => ["onSurfaceUpdate", {comment}]);
+        this.engine.arrange(ctx);
+    }
+
+    public onCurrentSurfaceChanged(ctx: IDriverContext): void {
+        debugObj(() => ["onCurrentSurfaceChanged", {srf: ctx.currentSurface}]);
+        this.engine.arrange(ctx);
+    }
+
+    public onWindowAdded(ctx: IDriverContext, window: Window): void {
+        debugObj(() => ["onWindowAdded", {window}]);
+        if (window.shouldIgnore) {
+            this.engine.manage(window);
+            return;
+        }
+        this.markWindowPending(window);
+    }
+
     public onWindowRemoved(ctx: IDriverContext, window: Window): void {
         debugObj(() => ["onWindowRemoved", {window}]);
+        this.clearPendingWindow(window);
+        if (window.state === WindowState.Unmanaged)
+            return;
         this.engine.unmanage(window);
         this.engine.arrange(ctx);
     }
@@ -141,6 +189,8 @@ class TilingController {
 
     public onWindowGeometryChanged(ctx: IDriverContext, window: Window): void {
         debugObj(() => ["onWindowGeometryChanged", {window}]);
+        if (this.tryInitializeWindow(ctx, window))
+            return;
         this.engine.enforceSize(ctx, window);
     }
 
@@ -149,6 +199,8 @@ class TilingController {
     public onWindowChanged(ctx: IDriverContext, window: Window | null, comment?: string): void {
         if (window) {
             debugObj(() => ["onWindowChanged", {window, comment}]);
+            if (this.tryInitializeWindow(ctx, window))
+                return;
 
             if (comment === "unminimized")
                 ctx.currentWindow = window;
