@@ -259,7 +259,7 @@ class KWinDriver implements IDriverContext {
 
                 const window = this.windowMap.add(client);
                 this.control.onWindowAdded(this, window);
-                if (window.state !== WindowState.Unmanaged)
+                if (window.state !== WindowState.Unmanaged || this.control.isPendingWindow(window))
                     this.bindWindowEvents(window, client);
                 else
                     this.windowMap.remove(client);
