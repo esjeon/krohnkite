@@ -104,6 +104,9 @@ declare namespace KWin {
         readonly resize: boolean;
         readonly resizeable: boolean;
         readonly specialWindow: boolean;
+        /** True for docks (panels). Present at runtime since KWin 5.x, but
+         *  previously undeclared, so it could not be used from a script. */
+        readonly dock: boolean;
 
         /* read-write */
         desktop: number;
