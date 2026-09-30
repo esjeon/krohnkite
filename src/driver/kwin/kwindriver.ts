@@ -248,6 +248,29 @@ class KWinDriver implements IDriverContext {
         this.connect(workspace.currentDesktopChanged, (desktop: number, client: KWin.Client) =>
             this.control.onCurrentSurfaceChanged(this));
 
+        // A panel (dock) showing or hiding changes the screen's exclusive zone,
+        // and with it the work area -- but KWin exposes no signal for that.
+        // Workspace has no clientAreaChanged, and neither clientAdded nor
+        // clientRemoved is routed to a re-arrange, so the tiles keep the size
+        // they had before the panel toggled.
+        //
+        // Route dock add/remove to the same hook the screen changes use.
+        // Filtered on Client.dock so that plasmashell windows which are not
+        // docks (the application launcher, tray popups) do not re-tile.
+        //
+        // The arrange is deferred: clientRemoved fires while the dock is still
+        // counted in the screen's exclusive zone, so arranging inline re-reads
+        // the old work area and silently does nothing. 60ms is measured from
+        // the settle curve; the same shape as the setTimeout above, which
+        // defers client.windowShown by 50ms.
+        const dockSurfaceChanged = (client: KWin.Client) => {
+            if (!client || !client.dock)
+                return;
+            this.setTimeout(() => this.control.onSurfaceUpdate(this, "dock"), 60);
+        };
+        this.connect(workspace.clientAdded, dockSurfaceChanged);
+        this.connect(workspace.clientRemoved, dockSurfaceChanged);
+
         this.connect(workspace.clientAdded, (client: KWin.Client) => {
             /* NOTE: windowShown can be fired in various situations.
              *       We need only the first one - when window is created. */
